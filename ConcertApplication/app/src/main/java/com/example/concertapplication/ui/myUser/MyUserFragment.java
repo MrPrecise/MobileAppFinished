@@ -96,7 +96,6 @@ public class MyUserFragment extends Fragment{
         userUpdate = root.findViewById(R.id.userUpdate);
         userCancle = root.findViewById(R.id.userCancle);
 
-        validateTicketButton = root.findViewById(R.id.validateTicketButton);
 
         myQueue = MySingleton.getInstance(root.getContext()).getRequestQueue();
 
