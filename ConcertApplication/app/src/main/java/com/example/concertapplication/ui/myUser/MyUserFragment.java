@@ -56,15 +56,6 @@ public class MyUserFragment extends Fragment{
 
     private RequestQueue myQueue;
 
-    private MyUserFragmentListener myUserFragmentListener;
-
-    public interface MyUserFragmentListener{
-        void onInputMyUserFragmentSent(String input);
-    }
-
-    public static MyUserFragment newInstance() {
-        return new MyUserFragment();
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -77,7 +68,6 @@ public class MyUserFragment extends Fragment{
         sharedPreferences = getContext().getSharedPreferences("com.example.concertapplication", Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
-        // TODO add check if token valid
         if(sharedPreferences.getString(getString(R.string.token), "") == ""){
             loadLoginPage();
         }
@@ -105,7 +95,6 @@ public class MyUserFragment extends Fragment{
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO logout request to server
                 editor.putString(getString(R.string.token), "");
                 editor.putString(getString(R.string.currentUserUsername), "");
                 editor.commit();
@@ -128,39 +117,14 @@ public class MyUserFragment extends Fragment{
             }
         });
 
-        validateTicketButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                String instruction = "ADM";
-                myUserFragmentListener.onInputMyUserFragmentSent(instruction);
-            }
-        });
-
         return root;
     }
 
 
     @Override
-    public void onAttach(Context context){
-        super.onAttach(context);
-        if(context instanceof MyUserFragmentListener){
-            myUserFragmentListener = (MyUserFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement MyUserFragmentListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        myUserFragmentListener = null;
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(MyUserViewModel.class);
-        // TODO: Use the ViewModel
     }
 
     private void loadLoginPage(){

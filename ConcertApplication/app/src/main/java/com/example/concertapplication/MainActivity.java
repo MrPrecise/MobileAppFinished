@@ -1,6 +1,5 @@
 package com.example.concertapplication;
 
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +9,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
@@ -23,10 +23,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.concertapplication.singletons.MySingleton;
 import com.example.concertapplication.ui.myUser.MyUserFragment;
 import com.example.concertapplication.ui.usersConcert.UsersConcertFragment;
+import com.example.concertapplication.ui.valid.InvlaidFragment;
+import com.example.concertapplication.ui.valid.ValidFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -40,7 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements MyUserFragment.MyUserFragmentListener, NfcAdapter.OnNdefPushCompleteCallback,
+public class MainActivity extends AppCompatActivity implements NfcAdapter.OnNdefPushCompleteCallback,
         NfcAdapter.CreateNdefMessageCallback, UsersConcertFragment.UsersConcertFragmentListener {
 
     private MyUserFragment myUserFragment;
@@ -88,8 +92,6 @@ public class MainActivity extends AppCompatActivity implements MyUserFragment.My
         editor = sharedPreferences.edit();
         myQueue = MySingleton.getInstance(this).getRequestQueue();
 
-
-        myUserFragment = new MyUserFragment();
         usersConcertFragment = new UsersConcertFragment();
 
     }
@@ -112,11 +114,6 @@ public class MainActivity extends AppCompatActivity implements MyUserFragment.My
         messagesReceivedArray = savedInstanceState.getStringArrayList("lastMessagesReceived");
     }
 
-    // Gets information from MyUserFragment
-    @Override
-    public void onInputMyUserFragmentSent(String input) {
-            nfcInstructions = input;
-    }
 
     // Gets information from UsersConcertFragment
     @Override
@@ -221,10 +218,6 @@ public class MainActivity extends AppCompatActivity implements MyUserFragment.My
         handleNfcIntent(intent);
     }
 
-    // TODO Get NFC unique key
-    //
-    //    // TODO check NFC unique key
-
     private void getTicketStatusAndNfc(int idToValidate){
         String url = "https://concert-backend-heroku.herokuapp.com" + "/api/order/validate";
 
@@ -244,8 +237,38 @@ public class MainActivity extends AppCompatActivity implements MyUserFragment.My
                         try {
                             if(response.getBoolean("valid")){
                                 Log.d("MYKEYWORD", "VALID");
+                                final ValidFragment fr = new ValidFragment();
+                                final FragmentManager fm = getSupportFragmentManager();
+                                FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                fragmentTransaction.replace(R.id.nav_host_fragment, fr);
+                                fragmentTransaction.commit();
+
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                        fragmentTransaction.remove(fr);
+                                        fragmentTransaction.commit();
+                                    }
+                                }, 3000);
                             } else {
                                 Log.d("MYKEYWORD", "INVALID");
+                                final InvlaidFragment fr = new InvlaidFragment();
+                                final FragmentManager fm = getSupportFragmentManager();
+                                androidx.fragment.app.FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                fragmentTransaction.replace(R.id.nav_host_fragment, fr);
+                                fragmentTransaction.commit();
+
+                                final Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+                                        fragmentTransaction.remove(fr);
+                                        fragmentTransaction.commit();
+                                    }
+                                }, 3000);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
